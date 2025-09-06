@@ -1,0 +1,652 @@
+:root {
+  --bg: #F3F4F6;
+  --card: rgba(255, 255, 255, 0.25); /* transparent for frosted glass */
+  --text: #111827;
+  --muted: #6B7280;
+  --primary: #3B82F6;
+  --secondary: #8B5CF6;
+  --danger: #ef4444;
+}
+
+.dark-mode {
+  --bg: #0f172a;
+  --card: rgba(30, 41, 59, 0.45); /* dark frosted glass */
+  --text: #E5E7EB;
+  --muted: #9CA3AF;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Background image */
+.background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: url("school-bg.jpg") center/cover no-repeat;
+  filter: blur(6px) brightness(0.7);
+}
+.dark-mode .background {
+  filter: blur(8px) brightness(0.3);
+}
+
+/* Main wrapper */
+.wrapper {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 20px;
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+/* School info (left) */
+.school-info {
+  flex: 1;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+.school-info img {
+  height: 100px; /* bigger logo */
+  margin-bottom: 14px;
+}
+.school-info h2 {
+  margin: 0 0 8px;
+  font-size: 28px; /* bigger headline */
+  font-weight: 700;
+}
+.school-info p {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Form container (right, frosted glass) */
+.container {
+  flex: 1.1;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  background: var(--card);
+  min-width: 320px;
+}
+
+/* Top bar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+h1 {
+  font-size: 20px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.dark-toggle {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Labels and inputs */
+label {
+  display: block;
+  font-weight: 600;
+  margin-top: 12px;
+}
+input[type="text"], input[type="time"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  margin-top: 6px;
+  font-size: 14px;
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(6px);
+  box-sizing: border-box;
+}
+.dark-mode input {
+  background: rgba(17, 24, 39, 0.6);
+  border-color: rgba(255,255,255,0.2);
+}
+input.error {
+  border: 2px solid var(--danger);
+  background: #FEE2E2;
+}
+.dark-mode input.error {
+  background: #7f1d1d;
+}
+
+/* --- Upload photo as its own section --- */
+.photo-section {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.dark-mode .photo-section {
+  background: rgba(30, 41, 59, 0.5);
+}
+.btn-upload {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #fff;
+  cursor: pointer;
+}
+.photo-filename {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.photo-preview img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-top: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+}
+
+/* Subjects */
+details.subject {
+  margin-top: 14px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  padding: 6px;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(6px);
+}
+.dark-mode details.subject {
+  background: rgba(30, 41, 59, 0.4);
+}
+.subject-body {
+  margin-top: 8px;
+}
+.days {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.chip {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  cursor: pointer;
+  user-select: none;
+}
+.chip.active {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #fff;
+  border: none;
+}
+.remove-subject {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* Toolbar buttons */
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.toolbar button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #fff;
+}
+.btn-reset {
+  background: var(--danger);
+  color: #fff;
+}
+
+/* QR section */
+.qr-wrap {
+  margin-top: 18px;
+  padding: 14px;
+  text-align: center;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  display: none;
+}
+.qr-wrap.show {
+  display: block;
+}
+#qrText {
+  margin-top: 10px;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+/* -------------------------
+   ERROR PULSE + ANIMATIONS
+   ------------------------- */
+
+/* higher specificity so it overrides other input styles */
+.container input.error,
+input.error {
+  border: 2px solid var(--danger) !important;
+  background: #FEE2E2 !important;
+  animation: errorPulse 0.6s ease infinite alternate;
+  box-shadow: 0 0 0 rgba(239,68,68,0.0);
+}
+
+/* summary / subject-level highlight (when days missing) */
+details.subject.summary-error,
+details.subject .summary-error,
+.summary-error {
+  animation: errorPulse 0.6s ease infinite alternate;
+  box-shadow: 0 0 10px rgba(239,68,68,0.45);
+  border-radius: 8px;
+}
+
+/* keyframes used by both input and summary highlight */
+@keyframes errorPulse {
+  from { box-shadow: 0 0 0 0 rgba(239,68,68,0.25); }
+  to   { box-shadow: 0 0 10px 4px rgba(239,68,68,0.45); }
+}
+
+/* Fade / entrance animations (smooth) */
+.container, .wrapper, .qr-wrap, details.subject {
+  transition: transform .28s ease, opacity .28s ease, box-shadow .28s ease;
+}
+.fade-in { animation: fadeIn .36s ease forwards; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Make the buttons match remove-subject style and feel nicer */
+button.btn, .btn-primary, .btn-reset, .remove-subject {
+  transition: transform .18s ease, box-shadow .18s ease, opacity .12s ease;
+  border-radius: 10px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+button.btn:hover, .btn-primary:hover, .btn-reset:hover, .remove-subject:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+/* Title visibility fallback tweak: ensure the fallback (data-text) sits under gradient */
+.topbar h1 {
+  position: relative;
+  z-index: 1;
+}
+.topbar h1::after {
+  /* the fallback text sits behind the gradient, slightly offset to remain readable */
+  content: attr(data-text);
+  position: absolute;
+  left: 0; top: 0;
+  z-index: -1;
+  color: var(--text);
+  opacity: 0.95;   /* slight fallback visibility */
+  -webkit-text-fill-color: initial;
+  pointer-events: none;
+}
+
+/* ---- subject add/remove animations ---- */
+@keyframes fadeInSubject {
+  from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fadeOutSubject {
+  to { opacity: 0; transform: translateY(-12px) scale(0.96); height: 0; margin: 0; padding: 0; }
+}
+details.subject { animation: fadeInSubject 0.36s ease; }
+.subject.removing { animation: fadeOutSubject 0.36s forwards; }
+
+/* ---- reset animation ---- */
+@keyframes resetFade {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: .35; transform: scale(.98); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.container.resetting { animation: resetFade 0.45s ease; }
+
+/* ---- fade-in for QR, container, wrapper ---- */
+.fade-in { animation: fadeIn 0.36s ease forwards; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- summary error pulse (no days) ---- */
+@keyframes errorPulse {
+  from { box-shadow: 0 0 0 0 rgba(239,68,68,0.25); }
+  to { box-shadow: 0 0 12px 4px rgba(239,68,68,0.45); }
+}
+.summary-error {
+  animation: errorPulse 0.6s ease infinite alternate;
+  border-radius: 8px;
+}
+
+/* ---- input shake for attention ---- */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+.shake { animation: shake .48s ease; }
+
+/* Toast container */
+#toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;  /* align right */
+  pointer-events: none;   /* clicks pass through */
+}
+
+/* Toast */
+.toast {
+  margin-top: 10px;        /* spacing between each toast */
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  background: #3b82f6;     /* default (info) */
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeSlideIn 0.4s forwards;
+  pointer-events: auto;    /* allow close button clicks */
+}
+
+.toast.success { background: #22c55e; }
+.toast.error   { background: #ef4444; }
+
+@keyframes fadeSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeSlideOut {
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* ---- small visual polish for buttons ---- */
+button.btn, .btn-primary, .btn-reset, .remove-subject {
+  transition: transform .18s ease, box-shadow .18s ease;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+button.btn:hover, .btn-primary:hover, .btn-reset:hover, .remove-subject:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.12);
+}
+
+/* ---- ensure QR hidden by default (defensive) ---- */
+#qrSection { display: none !important; }
+#qrSection.show { display: block !important; }
+
+/* -------------------------
+   Mobile Optimizations
+   ------------------------- */
+@media (max-width: 768px) {
+  .wrapper {
+    flex-direction: column;
+    gap: 20px;
+    padding: 16px;
+    align-items: center;
+  }
+
+  .school-info {
+    text-align: center;
+    align-items: center;
+  }
+
+  .school-info .logo {
+    height: 80px;
+    margin-bottom: 8px;
+  }
+
+  .school-info h2 {
+    font-size: 20px;
+  }
+
+  .school-info p {
+    font-size: 14px;
+    max-width: 95%;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 100%;
+    padding: 18px;
+  }
+
+  /* Make form elements and buttons full-width */
+  input, select, button, .btn-upload {
+    width: 100%;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    width: 100%;
+  }
+  .toolbar button {
+    width: 100%;
+  }
+}
+
+/* -------------------------
+   Dark/Light Mode Animation
+   ------------------------- */
+html, body, .container, .background, input, button, details.subject {
+  transition: background-color 0.4s ease,
+              color 0.4s ease,
+              box-shadow 0.4s ease,
+              border-color 0.4s ease,
+              filter 0.4s ease;
+}
+
+body.dark-mode .background {
+  filter: blur(10px) brightness(0.32);
+  transition: filter 0.6s ease;
+}
+
+/* Add a subtle fade pulse when switching mode */
+body.mode-transition * {
+  transition: all 0.4s ease !important;
+}
+/* -------------------------
+   Mobile Floating Form
+   ------------------------- */
+@media (max-width: 768px) {
+  .container {
+    width: 92%;              /* not full width */
+    margin: 0 auto;          /* center horizontally */
+    border-radius: 18px;     /* rounder corners */
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.25); /* floating shadow */
+    backdrop-filter: blur(12px) saturate(130%); /* frosted glass effect */
+  }
+
+  body {
+    padding: 12px; /* keep breathing room */
+  }
+}
+
+/* -------------------------
+   Headline styling (desktop + mobile)
+   ------------------------- */
+.topbar h1 {
+  position: relative;
+  font-weight: 700;
+  font-size: 22px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.25); /* subtle shadow for readability */
+}
+
+/* fallback solid text behind gradient for readability */
+.topbar h1::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--text);
+  z-index: -1;
+  opacity: 0.25; /* faint, so gradient stays dominant */
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .topbar h1 {
+    font-size: 18px;
+    text-align: left;
+  }
+}
+
+/* Ensure topbar alignment */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* fallback text for readability */
+.topbar h1::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--text);
+  z-index: -1;
+  opacity: 0.25;
+}
+
+/* Dark mode toggle button */
+.dark-toggle {
+  margin-right: auto; /* pushes it to far right */
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 9px;
+  border-radius: 8px;
+}
+
+/* Smooth transition for the entire container background and text */
+.container {
+  transition: background 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+}
+
+/* Make frosted glass smoother when switching modes */
+.dark-mode .container {
+  background: rgba(30, 41, 59, 0.85); /* darker frosted look */
+  backdrop-filter: blur(10px) saturate(120%);
+}
+
+/* Animate dark mode toggle spin */
+.dark-toggle {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: transform 0.4s ease, color 0.3s ease, background 0.3s ease;
+}
+
+.dark-toggle.spin {
+  transform: rotate(360deg);
+}
+
+.dark-toggle:hover {
+  background: rgba(0,0,0,0.08);
+}
+.dark-mode .dark-toggle:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Desktop default */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.topbar h1 {
+  flex: 1;
+  font-size: 20px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  color: transparent;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.dark-toggle {
+  margin-left: auto;
+  margin-right: 0;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Force mobile adjustments */
+@media screen and (max-width: 768px) {
+  .topbar {
+    flex-direction: row;       /* always horizontal */
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .topbar h1 {
+    font-size: 26px !important;  /* force bigger headline */
+  }
+
+  .dark-toggle {
+    font-size: 28px !important;  /* force bigger icon */
+    margin-left: auto !important;
+  }
+}
+

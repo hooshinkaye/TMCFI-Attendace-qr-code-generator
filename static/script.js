@@ -504,4 +504,5 @@ async function saveToServer(id, name, schedule, photoBase64, qrBase64) {
     console.error(err);
     alert("Error saving student record.");
   }
+
 }

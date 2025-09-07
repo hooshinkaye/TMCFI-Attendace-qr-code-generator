@@ -8,17 +8,17 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <!-- Styles (Flask version) -->
+  <!-- Styles (Flask static reference) -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
   <!-- QR Code Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <!-- Script (Flask version, loaded after DOM) -->
+  <!-- Script (Flask static reference) -->
   <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
 <body>
-  <!-- Background (Flask version) -->
+  <!-- Background -->
   <div class="background" style="background: url('{{ url_for('static', filename='school-bg.jpg') }}') center/cover no-repeat;"></div>
 
   <div class="wrapper">
@@ -33,19 +33,19 @@
     <div class="container">
       <div class="topbar">
         <h1 data-text="Attendance QR Generator">Attendance QR Generator</h1>
-        <button class="dark-toggle" type="button">🌙</button>
+        <button id="darkToggle" class="dark-toggle" type="button">🌙</button>
       </div>
 
       <label>🆔 Student ID</label>
-      <input id="studentID" type="text" placeholder="e.g. 2025-001">
+      <input id="studentId" type="text" placeholder="e.g. 2025-001">
 
       <label>👤 Full Name</label>
-      <input id="studentName" type="text" placeholder="e.g. Juan Dela Cruz">
+      <input id="name" type="text" placeholder="e.g. Juan Dela Cruz">
 
       <div class="photo-group">
         <label>📷 Upload Photo</label>
         <button id="photoBtn" class="btn-upload" type="button">Choose Photo</button>
-        <input id="photo" type="file" accept="image/*" hidden>
+        <input id="photoInput" type="file" accept="image/*" hidden>
         <div id="photoFilename" class="photo-filename">No file chosen</div>
         <div id="photo-preview" class="photo-preview"></div>
         <button id="removePhoto" class="btn-reset" type="button" style="display:none;">Remove Photo</button>
@@ -55,15 +55,18 @@
 
       <div class="toolbar">
         <button id="addSubject" class="btn-primary" type="button">+ Add Subject</button>
-        <button id="generateQR" class="btn-primary" type="button">Generate QR</button>
+        <button id="generateBtn" class="btn-primary" type="button">Generate QR</button>
         <button id="resetBtn" class="btn-reset" type="button">Reset</button>
         <button id="downloadBtn" class="btn-primary" type="button" style="display:none;">Download QR</button>
+        <button id="saveBtn" class="btn-primary" type="button">Save to Server</button>
       </div>
 
-      <div
-
-      <-- QR preview section -->
-<div id="qrSection" style="display:none;">
-  <div id="qrcode"></div>
-  <div id="qrText" style="margin-top:10px; font-size:13px; word-break:break-all;"></div>
-</div>
+      <!-- QR preview section -->
+      <div id="qrSection" style="display:none;">
+        <div id="qrcode"></div>
+        <div id="qrText" style="margin-top:10px; font-size:13px; word-break:break-all;"></div>
+      </div>
+    </div> <!-- end container -->
+  </div> <!-- end wrapper -->
+</body>
+</html>

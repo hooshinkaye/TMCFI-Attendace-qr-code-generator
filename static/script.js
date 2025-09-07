@@ -286,70 +286,78 @@ function downloadQRLocally() {
   }
 }
 
-// ---------- Save to Server ----------
+// ---------- Save to Server (Simplified) ----------
 async function saveToServer() {
-  const studentId = $id('studentId').value.trim();
-  const fullName = $id('name').value.trim();
-  const lastName = $id('lastName').value.trim();
-  const photoData = window.studentPhoto || '';
-  
-  // Get QR code data
-  const qrcodeDiv = $id('qrcode');
-  let qrData = '';
-  if (qrcodeDiv) {
-    const canvas = qrcodeDiv.querySelector('canvas');
-    const img = qrcodeDiv.querySelector('img');
-    if (canvas) {
-      try {
-        qrData = canvas.toDataURL('image/png');
-      } catch (err) {
-        console.error('Error getting QR data from canvas:', err);
-      }
-    } else if (img) {
-      qrData = img.src;
-    }
-  }
-
-  if (!studentId || !fullName || !qrData) {
-    showToast('Missing Student ID, Full Name, or QR code. Please generate first.', 'error');
-    return;
-  }
-
-  // Use the provided last name or extract from full name
-  let finalLastName = lastName;
-  if (!finalLastName && fullName) {
-    const parts = fullName.trim().split(/\s+/);
-    if (parts.length) {
-      finalLastName = parts[parts.length - 1];
-    }
-  }
-  finalLastName = finalLastName || 'attendance';
-
-  const payload = {
-    id: studentId,
-    name: fullName,
-    lastName: finalLastName,
-    qr: qrData,
-    photo: photoData
-  };
-
   try {
-    const resp = await fetch('https://tmcfi-attendace-qr-code-generator.onrender.com/save', {
+    // Get form values
+    const studentId = $id('studentId') ? $id('studentId').value.trim() : '';
+    const fullName = $id('name') ? $id('name').value.trim() : '';
+    const photoData = window.studentPhoto || '';
+    
+    // Get QR code data
+    const qrcodeDiv = $id('qrcode');
+    let qrData = '';
+    if (qrcodeDiv) {
+      const canvas = qrcodeDiv.querySelector('canvas');
+      const img = qrcodeDiv.querySelector('img');
+      if (canvas) {
+        qrData = canvas.toDataURL('image/png');
+      } else if (img) {
+        qrData = img.src;
+      }
+    }
+
+    // Validation
+    if (!studentId || !fullName) {
+      showToast('Student ID and Full Name are required.', 'error');
+      return;
+    }
+    
+    if (!qrData) {
+      showToast('Please generate a QR code first.', 'error');
+      return;
+    }
+
+    // Extract last name from full name
+    let lastName = 'attendance';
+    const nameParts = fullName.split(/\s+/).filter(Boolean);
+    if (nameParts.length > 0) {
+      lastName = nameParts[nameParts.length - 1];
+    }
+
+    const payload = {
+      id: studentId,
+      name: fullName,
+      lastName: lastName,
+      qr: qrData,
+      photo: photoData
+    };
+
+    console.log('Saving to server:', payload);
+
+    // Send to server
+    const response = await fetch('https://tmcfi-attendace-qr-code-generator.onrender.com/save', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(payload)
     });
 
-    const result = await resp.json();
-    if (resp.ok) {
-      showToast(result.message || 'Saved to server successfully!', 'success');
-      console.log('Saved files:', result.saved);
+    const result = await response.json();
+    
+    if (response.ok) {
+      showToast(result.message || 'Saved successfully!', 'success');
+      console.log('Server response:', result);
     } else {
-      showToast(`Server error: ${result.error || resp.statusText}`, 'error');
+      showToast(result.error || 'Error saving to server', 'error');
     }
-  } catch (err) {
-    console.error('saveToServer error:', err);
-    showToast('Error saving to server. Please check your connection.', 'error');
+    
+    return result;
+  } catch (error) {
+    console.error('Error saving to server:', error);
+    showToast('Failed to save to server. Please try again.', 'error');
+    throw error;
   }
 }
 
@@ -497,3 +505,4 @@ document.addEventListener('DOMContentLoaded', () => {
   // page-level fade-in
   window.addEventListener('load', () => document.body.classList.add('loaded'));
 });
+

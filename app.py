@@ -36,42 +36,66 @@ def get_drive_service():
         
         # Create Google Drive service
         drive_service = build('drive', 'v3', credentials=creds)
-        print("Successfully connected to Google Drive")
         return drive_service
         
     except Exception as e:
         print("ERROR connecting to Google Drive:", str(e))
         return None
 
-def upload_to_drive(file_data, filename, folder_name="Student QR Codes"):
-    """Upload a file to Google Drive"""
+def find_or_create_folder(drive_service, folder_name, parent_id=None):
+    """Find a folder by name, or create it if it doesn't exist"""
     try:
-        drive_service = get_drive_service()
-        if not drive_service:
-            return None
-            
-        # Check if folder exists, create if not
+        # Search for the folder
         query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
+        if parent_id:
+            query += f" and '{parent_id}' in parents"
+        
         results = drive_service.files().list(q=query, fields="files(id, name)").execute()
         folders = results.get('files', [])
         
         if folders:
-            folder_id = folders[0]['id']
-            print(f"Found existing folder: {folder_id}")
+            print(f"Found existing folder: {folder_name} - ID: {folders[0]['id']}")
+            return folders[0]['id']
         else:
             # Create the folder if it doesn't exist
             file_metadata = {
                 'name': folder_name,
                 'mimeType': 'application/vnd.google-apps.folder'
             }
+            if parent_id:
+                file_metadata['parents'] = [parent_id]
+                
             folder = drive_service.files().create(body=file_metadata, fields='id').execute()
-            folder_id = folder.get('id')
-            print(f"Created new folder: {folder_id}")
+            print(f"Created new folder: {folder_name} - ID: {folder.get('id')}")
+            return folder.get('id')
+            
+    except Exception as e:
+        print(f"ERROR finding/creating folder {folder_name}:", str(e))
+        return None
+
+def upload_to_drive(file_data, filename, last_name, student_id):
+    """Upload a file to Google Drive with organized folder structure"""
+    try:
+        drive_service = get_drive_service()
+        if not drive_service:
+            return None
         
-        # Upload the file
+        # 1. Find or create main folder
+        main_folder_name = "BSCS1 - ATTENDANCE QR CODE"
+        main_folder_id = find_or_create_folder(drive_service, main_folder_name)
+        if not main_folder_id:
+            return None
+        
+        # 2. Find or create student subfolder (using last name)
+        student_folder_name = last_name
+        student_folder_id = find_or_create_folder(drive_service, student_folder_name, main_folder_id)
+        if not student_folder_id:
+            return None
+        
+        # 3. Upload the file to the student's folder
         file_metadata = {
             'name': filename,
-            'parents': [folder_id]
+            'parents': [student_folder_id]
         }
         
         media = MediaInMemoryUpload(file_data, mimetype='image/png')
@@ -82,7 +106,7 @@ def upload_to_drive(file_data, filename, folder_name="Student QR Codes"):
         ).execute()
         
         file_id = file.get('id')
-        print(f"Successfully uploaded file: {filename} with ID: {file_id}")
+        print(f"Successfully uploaded {filename} to folder {last_name}")
         return file_id
         
     except Exception as e:
@@ -100,7 +124,7 @@ def test_drive():
         service = get_drive_service()
         if service:
             # Try to list some files to verify connection works
-            results = service.files().list(pageSize=10, fields="files(id, name)").execute()
+            results = service.files().list(pageSize=5, fields="files(id, name)").execute()
             files = results.get('files', [])
             return jsonify({
                 "status": "success", 
@@ -121,7 +145,7 @@ def save():
 
         student_id = data.get("id", "unknown")
         name = data.get("name", "unknown")
-        last_name = data.get("lastName", "attendance")
+        last_name = data.get("lastName", "unknown")
         qr_data = data.get("qr", "")
         photo_data = data.get("photo", "")
 
@@ -135,7 +159,7 @@ def save():
             qr_filename = f"{last_name}_{student_id}_qr.png"
             print(f"Attempting to save QR code: {qr_filename}")
             
-            qr_file_id = upload_to_drive(qr_bytes, qr_filename, f"Student QR Codes/BSCS1/{last_name}")
+            qr_file_id = upload_to_drive(qr_bytes, qr_filename, last_name, student_id)
             
             if qr_file_id:
                 saved_files.append({"name": qr_filename, "drive_id": qr_file_id})
@@ -150,7 +174,7 @@ def save():
             photo_filename = f"{last_name}_{student_id}_photo.png"
             print(f"Attempting to save photo: {photo_filename}")
             
-            photo_file_id = upload_to_drive(photo_bytes, photo_filename, f"Student QR Codes/BSCS1/{last_name}")
+            photo_file_id = upload_to_drive(photo_bytes, photo_filename, last_name, student_id)
             
             if photo_file_id:
                 saved_files.append({"name": photo_filename, "drive_id": photo_file_id})
@@ -162,7 +186,8 @@ def save():
         if saved_files:
             return jsonify({
                 "message": "Files saved to Google Drive successfully!", 
-                "saved": saved_files
+                "saved": saved_files,
+                "folder_structure": f"BSCS1 - ATTENDANCE QR CODE/{last_name}/"
             })
         else:
             return jsonify({"error": "No files were saved"}), 500

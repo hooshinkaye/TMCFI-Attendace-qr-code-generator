@@ -8,52 +8,67 @@ from googleapiclient.http import MediaInMemoryUpload
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
 
-# Google Drive API setup
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
-# REPLACE THIS WITH YOUR ACTUAL FOLDER ID FROM GOOGLE DRIVE
-DRIVE_FOLDER_ID = '1JhjzkvHMv46qxLyqNJI15Ul5sW0dpuIk'
+# ===== GOOGLE DRIVE SETUP =====
+# Replace this with your actual folder ID from Step 2
+FOLDER_ID = "1Dfb0-pe97NWBr6i7F4giBMsshHpO0m7p"
 
 def get_drive_service():
+    """Connect to Google Drive"""
     try:
-        # Get the service account info from environment variable
-        service_account_info = os.environ.get('GOOGLE_DRIVE_CREDENTIALS')
-        if not service_account_info:
-            raise ValueError("Google Drive credentials not found in environment variables")
+        # Get credentials from environment variable
+        credentials_json = os.environ.get('GOOGLE_DRIVE_CREDENTIALS')
+        if not credentials_json:
+            return None
+            
+        # Convert JSON string to dictionary
+        credentials_info = json.loads(credentials_json)
         
-        # Parse the JSON string from environment variable
-        credentials_dict = json.loads(service_account_info)
+        # Create credentials object
+        credentials = service_account.Credentials.from_service_account_info(
+            credentials_info, 
+            scopes=['https://www.googleapis.com/auth/drive.file']
+        )
         
-        # Create credentials from service account info
-        creds = service_account.Credentials.from_service_account_info(
-            credentials_dict, scopes=SCOPES)
+        # Create Google Drive service
+        drive_service = build('drive', 'v3', credentials=credentials)
+        return drive_service
         
-        # Build the Drive service
-        service = build('drive', 'v3', credentials=creds)
-        return service
     except Exception as e:
-        print(f"Error creating Drive service: {e}")
+        print("Error connecting to Google Drive:", e)
         return None
 
 def upload_to_drive(file_data, filename):
+    """Upload a file to Google Drive"""
     try:
-        service = get_drive_service()
-        if not service:
+        # Get Google Drive connection
+        drive_service = get_drive_service()
+        if not drive_service:
             return None
-        
-        # Upload the file directly to the predefined folder
-        file_metadata = {
+            
+        # Prepare file information
+        file_info = {
             'name': filename,
-            'parents': [DRIVE_FOLDER_ID]  # Use the global folder ID
+            'parents': [FOLDER_ID]  # This is your folder ID
         }
         
-        media = MediaInMemoryUpload(file_data, mimetype='image/png', resumable=True)
-        file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        # Create file content
+        file_content = MediaInMemoryUpload(file_data, mimetype='image/png')
+        
+        # Upload to Google Drive
+        file = drive_service.files().create(
+            body=file_info, 
+            media_body=file_content, 
+            fields='id',
+            supportsAllDrives=True
+        ).execute()
         
         return file.get('id')
+        
     except Exception as e:
-        print(f"Error uploading to Google Drive: {e}")
+        print("Error uploading to Google Drive:", e)
         return None
 
+# ===== YOUR EXISTING ROUTES =====
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -70,30 +85,35 @@ def save():
     qr_data = data.get("qr", "")
     photo_data = data.get("photo", "")
 
-    saved = []
+    saved_files = []
 
-    # Save QR to Google Drive
+    # Save QR code
     if qr_data.startswith("data:image"):
         qr_bytes = base64.b64decode(qr_data.split(",")[1])
         qr_filename = f"{last_name}_{student_id}_qr.png"
         qr_file_id = upload_to_drive(qr_bytes, qr_filename)
+        
         if qr_file_id:
-            saved.append({"name": qr_filename, "drive_id": qr_file_id})
+            saved_files.append({"name": qr_filename, "drive_id": qr_file_id})
         else:
-            return jsonify({"error": "Failed to save QR code to Google Drive"}), 500
+            return jsonify({"error": "Failed to save QR code"}), 500
 
-    # Save Photo to Google Drive
+    # Save photo
     if photo_data.startswith("data:image"):
         photo_bytes = base64.b64decode(photo_data.split(",")[1])
         photo_filename = f"{last_name}_{student_id}_photo.png"
         photo_file_id = upload_to_drive(photo_bytes, photo_filename)
+        
         if photo_file_id:
-            saved.append({"name": photo_filename, "drive_id": photo_file_id})
+            saved_files.append({"name": photo_filename, "drive_id": photo_file_id})
         else:
-            return jsonify({"error": "Failed to save photo to Google Drive"}), 500
+            return jsonify({"error": "Failed to save photo"}), 500
 
-    if saved:
-        return jsonify({"message": "Student files saved to Google Drive", "saved": saved})
+    if saved_files:
+        return jsonify({
+            "message": "Files saved to Google Drive successfully!", 
+            "saved": saved_files
+        })
     else:
         return jsonify({"error": "No files were saved"}), 500
 

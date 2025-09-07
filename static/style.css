@@ -1,6 +1,6 @@
 :root {
   --bg: #F3F4F6;
-  --card: rgba(255, 255, 255, 0.25); /* transparent for frosted glass */
+  --card: rgba(255, 255, 255, 0.25);
   --text: #111827;
   --muted: #6B7280;
   --primary: #3B82F6;
@@ -10,7 +10,7 @@
 
 .dark-mode {
   --bg: #0f172a;
-  --card: rgba(30, 41, 59, 0.45); /* dark frosted glass */
+  --card: rgba(30, 41, 59, 0.45);
   --text: #E5E7EB;
   --muted: #9CA3AF;
 }
@@ -21,6 +21,7 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 /* Background image */
@@ -30,6 +31,7 @@ body {
   z-index: -1;
   background: url("school-bg.jpg") center/cover no-repeat;
   filter: blur(6px) brightness(0.7);
+  transition: filter 0.6s ease;
 }
 .dark-mode .background {
   filter: blur(8px) brightness(0.3);
@@ -43,6 +45,7 @@ body {
   display: flex;
   gap: 30px;
   align-items: flex-start;
+  transition: all 0.4s ease;
 }
 
 /* School info (left) */
@@ -52,12 +55,12 @@ body {
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 .school-info img {
-  height: 100px; /* bigger logo */
+  height: 100px;
   margin-bottom: 14px;
 }
 .school-info h2 {
   margin: 0 0 8px;
-  font-size: 28px; /* bigger headline */
+  font-size: 28px;
   font-weight: 700;
 }
 .school-info p {
@@ -75,26 +78,56 @@ body {
   -webkit-backdrop-filter: blur(16px) saturate(160%);
   background: var(--card);
   min-width: 320px;
+  transition: all 0.4s ease;
 }
 
-/* Top bar */
+/* Top bar - FIXED FOR MOBILE */
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  width: 100%;
+  gap: 10px;
 }
-h1 {
+
+.topbar h1 {
   font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  /* Fallback for browsers that don't support gradient text */
+  color: var(--primary);
+  /* Gradient text for supported browsers */
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   -webkit-background-clip: text;
-  color: transparent;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+  flex: 1;
+  min-width: 0; /* Allows text truncation */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* Dark mode toggle */
 .dark-toggle {
   background: none;
   border: none;
   font-size: 20px;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.dark-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark-mode .dark-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Labels and inputs */
@@ -103,6 +136,7 @@ label {
   font-weight: 600;
   margin-top: 12px;
 }
+
 input[type="text"], input[type="time"] {
   width: 100%;
   padding: 10px;
@@ -113,20 +147,26 @@ input[type="text"], input[type="time"] {
   background: rgba(255,255,255,0.5);
   backdrop-filter: blur(6px);
   box-sizing: border-box;
+  transition: all 0.3s ease;
 }
+
 .dark-mode input {
   background: rgba(17, 24, 39, 0.6);
   border-color: rgba(255,255,255,0.2);
+  color: var(--text);
 }
+
 input.error {
   border: 2px solid var(--danger);
   background: #FEE2E2;
+  animation: errorPulse 0.6s ease infinite alternate;
 }
+
 .dark-mode input.error {
   background: #7f1d1d;
 }
 
-/* --- Upload photo as its own section --- */
+/* Photo section */
 .photo-section {
   margin-top: 18px;
   padding: 14px;
@@ -135,10 +175,13 @@ input.error {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
 }
+
 .dark-mode .photo-section {
   background: rgba(30, 41, 59, 0.5);
 }
+
 .btn-upload {
   padding: 8px 12px;
   border: none;
@@ -146,13 +189,21 @@ input.error {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: #fff;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+.btn-upload:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
 .photo-filename {
   display: block;
   margin-top: 6px;
   font-size: 13px;
   color: var(--muted);
 }
+
 .photo-preview img {
   width: 100px;
   height: 100px;
@@ -170,31 +221,41 @@ details.subject {
   padding: 6px;
   background: rgba(255,255,255,0.2);
   backdrop-filter: blur(6px);
+  transition: all 0.3s ease;
 }
+
 .dark-mode details.subject {
   background: rgba(30, 41, 59, 0.4);
 }
+
 .subject-body {
   margin-top: 8px;
 }
+
 .days {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   margin-top: 8px;
 }
+
 .chip {
   padding: 6px 12px;
   border: 1px solid #ccc;
   border-radius: 20px;
   cursor: pointer;
   user-select: none;
+  transition: all 0.2s ease;
 }
+
 .chip.active {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: #fff;
   border: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
+
 .remove-subject {
   background: var(--danger);
   color: #fff;
@@ -203,6 +264,12 @@ details.subject {
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.remove-subject:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 /* Toolbar buttons */
@@ -212,6 +279,7 @@ details.subject {
   margin-top: 14px;
   flex-wrap: wrap;
 }
+
 .toolbar button {
   flex: 1;
   padding: 10px;
@@ -219,11 +287,20 @@ details.subject {
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
 }
+
+.toolbar button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: #fff;
 }
+
 .btn-reset {
   background: var(--danger);
   color: #fff;
@@ -237,119 +314,32 @@ details.subject {
   border: 1px dashed #ccc;
   border-radius: 8px;
   display: none;
+  transition: all 0.3s ease;
 }
+
 .qr-wrap.show {
   display: block;
+  animation: fadeIn 0.5s ease;
 }
+
 #qrText {
   margin-top: 10px;
   font-size: 13px;
   word-break: break-all;
+  color: var(--muted);
 }
 
-/* -------------------------
-   ERROR PULSE + ANIMATIONS
-   ------------------------- */
-
-/* higher specificity so it overrides other input styles */
-.container input.error,
-input.error {
-  border: 2px solid var(--danger) !important;
-  background: #FEE2E2 !important;
-  animation: errorPulse 0.6s ease infinite alternate;
-  box-shadow: 0 0 0 rgba(239,68,68,0.0);
-}
-
-/* summary / subject-level highlight (when days missing) */
-details.subject.summary-error,
-details.subject .summary-error,
-.summary-error {
-  animation: errorPulse 0.6s ease infinite alternate;
-  box-shadow: 0 0 10px rgba(239,68,68,0.45);
-  border-radius: 8px;
-}
-
-/* keyframes used by both input and summary highlight */
+/* Animations */
 @keyframes errorPulse {
   from { box-shadow: 0 0 0 0 rgba(239,68,68,0.25); }
-  to   { box-shadow: 0 0 10px 4px rgba(239,68,68,0.45); }
+  to { box-shadow: 0 0 10px 4px rgba(239,68,68,0.45); }
 }
 
-/* Fade / entrance animations (smooth) */
-.container, .wrapper, .qr-wrap, details.subject {
-  transition: transform .28s ease, opacity .28s ease, box-shadow .28s ease;
-}
-.fade-in { animation: fadeIn .36s ease forwards; }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Make the buttons match remove-subject style and feel nicer */
-button.btn, .btn-primary, .btn-reset, .remove-subject {
-  transition: transform .18s ease, box-shadow .18s ease, opacity .12s ease;
-  border-radius: 10px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-}
-button.btn:hover, .btn-primary:hover, .btn-reset:hover, .remove-subject:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-}
-
-/* Title visibility fallback tweak: ensure the fallback (data-text) sits under gradient */
-.topbar h1 {
-  position: relative;
-  z-index: 1;
-}
-.topbar h1::after {
-  /* the fallback text sits behind the gradient, slightly offset to remain readable */
-  content: attr(data-text);
-  position: absolute;
-  left: 0; top: 0;
-  z-index: -1;
-  color: var(--text);
-  opacity: 0.95;   /* slight fallback visibility */
-  -webkit-text-fill-color: initial;
-  pointer-events: none;
-}
-
-/* ---- subject add/remove animations ---- */
-@keyframes fadeInSubject {
-  from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes fadeOutSubject {
-  to { opacity: 0; transform: translateY(-12px) scale(0.96); height: 0; margin: 0; padding: 0; }
-}
-details.subject { animation: fadeInSubject 0.36s ease; }
-.subject.removing { animation: fadeOutSubject 0.36s forwards; }
-
-/* ---- reset animation ---- */
-@keyframes resetFade {
-  0% { opacity: 1; transform: scale(1); }
-  50% { opacity: .35; transform: scale(.98); }
-  100% { opacity: 1; transform: scale(1); }
-}
-.container.resetting { animation: resetFade 0.45s ease; }
-
-/* ---- fade-in for QR, container, wrapper ---- */
-.fade-in { animation: fadeIn 0.36s ease forwards; }
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ---- summary error pulse (no days) ---- */
-@keyframes errorPulse {
-  from { box-shadow: 0 0 0 0 rgba(239,68,68,0.25); }
-  to { box-shadow: 0 0 12px 4px rgba(239,68,68,0.45); }
-}
-.summary-error {
-  animation: errorPulse 0.6s ease infinite alternate;
-  border-radius: 8px;
-}
-
-/* ---- input shake for attention ---- */
 @keyframes shake {
   0% { transform: translateX(0); }
   20% { transform: translateX(-6px); }
@@ -358,6 +348,7 @@ details.subject { animation: fadeInSubject 0.36s ease; }
   80% { transform: translateX(4px); }
   100% { transform: translateX(0); }
 }
+
 .shake { animation: shake .48s ease; }
 
 /* Toast container */
@@ -368,284 +359,173 @@ details.subject { animation: fadeInSubject 0.36s ease; }
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;  /* align right */
-  pointer-events: none;   /* clicks pass through */
+  align-items: flex-end;
+  pointer-events: none;
 }
 
-/* Toast */
 .toast {
-  margin-top: 10px;        /* spacing between each toast */
+  margin-top: 10px;
   padding: 12px 18px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   color: #fff;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  background: #3b82f6;     /* default (info) */
+  background: #3b82f6;
   opacity: 0;
   transform: translateY(20px);
   animation: fadeSlideIn 0.4s forwards;
-  pointer-events: auto;    /* allow close button clicks */
+  pointer-events: auto;
 }
 
 .toast.success { background: #22c55e; }
-.toast.error   { background: #ef4444; }
+.toast.error { background: #ef4444; }
+.toast.warning { background: #f59e0b; }
 
 @keyframes fadeSlideIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeSlideOut {
-  to {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
+  to { opacity: 0; transform: translateY(-20px); }
 }
-
-/* ---- small visual polish for buttons ---- */
-button.btn, .btn-primary, .btn-reset, .remove-subject {
-  transition: transform .18s ease, box-shadow .18s ease;
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-}
-button.btn:hover, .btn-primary:hover, .btn-reset:hover, .remove-subject:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 40px rgba(0,0,0,0.12);
-}
-
-/* ---- ensure QR hidden by default (defensive) ---- */
-#qrSection { display: none !important; }
-#qrSection.show { display: block !important; }
 
 /* -------------------------
    Mobile Optimizations
    ------------------------- */
 @media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+  
   .wrapper {
     flex-direction: column;
     gap: 20px;
-    padding: 16px;
-    align-items: center;
+    padding: 10px;
+    margin: 10px auto;
   }
-
+  
   .school-info {
     text-align: center;
-    align-items: center;
+    width: 100%;
   }
-
-  .school-info .logo {
-    height: 80px;
-    margin-bottom: 8px;
+  
+  .school-info img {
+    height: 70px;
+    margin-bottom: 10px;
   }
-
+  
   .school-info h2 {
-    font-size: 20px;
+    font-size: 22px;
   }
-
+  
   .school-info p {
     font-size: 14px;
-    max-width: 95%;
+    max-width: 100%;
   }
-
+  
   .container {
     width: 100%;
     max-width: 100%;
     padding: 18px;
+    box-sizing: border-box;
   }
-
-  /* Make form elements and buttons full-width */
-  input, select, button, .btn-upload {
-    width: 100%;
+  
+  .topbar {
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
   }
-
-  .toolbar {
-    flex-direction: column;
-    width: 100%;
-  }
-  .toolbar button {
-    width: 100%;
-  }
-}
-
-/* -------------------------
-   Dark/Light Mode Animation
-   ------------------------- */
-html, body, .container, .background, input, button, details.subject {
-  transition: background-color 0.4s ease,
-              color 0.4s ease,
-              box-shadow 0.4s ease,
-              border-color 0.4s ease,
-              filter 0.4s ease;
-}
-
-body.dark-mode .background {
-  filter: blur(10px) brightness(0.32);
-  transition: filter 0.6s ease;
-}
-
-/* Add a subtle fade pulse when switching mode */
-body.mode-transition * {
-  transition: all 0.4s ease !important;
-}
-/* -------------------------
-   Mobile Floating Form
-   ------------------------- */
-@media (max-width: 768px) {
-  .container {
-    width: 92%;              /* not full width */
-    margin: 0 auto;          /* center horizontally */
-    border-radius: 18px;     /* rounder corners */
-    padding: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.25); /* floating shadow */
-    backdrop-filter: blur(12px) saturate(130%); /* frosted glass effect */
-  }
-
-  body {
-    padding: 12px; /* keep breathing room */
-  }
-}
-
-/* -------------------------
-   Headline styling (desktop + mobile)
-   ------------------------- */
-.topbar h1 {
-  position: relative;
-  font-weight: 700;
-  font-size: 22px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.25); /* subtle shadow for readability */
-}
-
-/* fallback solid text behind gradient for readability */
-.topbar h1::after {
-  content: attr(data-text);
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: var(--text);
-  z-index: -1;
-  opacity: 0.25; /* faint, so gradient stays dominant */
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
+  
   .topbar h1 {
     font-size: 18px;
-    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Solid color fallback for mobile */
+    background: var(--primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
-}
-
-/* Ensure topbar alignment */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-/* fallback text for readability */
-.topbar h1::after {
-  content: attr(data-text);
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: var(--text);
-  z-index: -1;
-  opacity: 0.25;
-}
-
-/* Dark mode toggle button */
-.dark-toggle {
-  margin-right: auto; /* pushes it to far right */
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 9px;
-  border-radius: 8px;
-}
-
-/* Smooth transition for the entire container background and text */
-.container {
-  transition: background 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
-}
-
-/* Make frosted glass smoother when switching modes */
-.dark-mode .container {
-  background: rgba(30, 41, 59, 0.85); /* darker frosted look */
-  backdrop-filter: blur(10px) saturate(120%);
-}
-
-/* Animate dark mode toggle spin */
-.dark-toggle {
-  margin-left: auto;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 8px;
-  transition: transform 0.4s ease, color 0.3s ease, background 0.3s ease;
-}
-
-.dark-toggle.spin {
-  transform: rotate(360deg);
-}
-
-.dark-toggle:hover {
-  background: rgba(0,0,0,0.08);
-}
-.dark-mode .dark-toggle:hover {
-  background: rgba(255,255,255,0.1);
-}
-
-/* Desktop default */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  width: 100%;
-}
-
-.topbar h1 {
-  flex: 1;
-  font-size: 20px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  -webkit-background-clip: text;
-  color: transparent;
-  margin: 0;
-  line-height: 1.2;
-}
-
-.dark-toggle {
-  margin-left: auto;
-  margin-right: 0;
-  font-size: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Force mobile adjustments */
-@media screen and (max-width: 768px) {
-  .topbar {
-    flex-direction: row;       /* always horizontal */
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .topbar h1 {
-    font-size: 26px !important;  /* force bigger headline */
-  }
-
+  
   .dark-toggle {
-    font-size: 28px !important;  /* force bigger icon */
-    margin-left: auto !important;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  
+  /* Form elements */
+  input[type="text"], input[type="time"] {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px;
+  }
+  
+  .toolbar {
+    flex-direction: column;
+  }
+  
+  .toolbar button {
+    width: 100%;
+    padding: 12px;
+  }
+  
+  .days {
+    justify-content: center;
+  }
+  
+  .chip {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+  
+  /* QR code sizing */
+  #qrcode canvas, #qrcode img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .topbar h1 {
+    font-size: 16px;
+  }
+  
+  .school-info h2 {
+    font-size: 20px;
+  }
+  
+  .container {
+    padding: 15px;
+  }
+  
+  .toolbar button {
+    padding: 14px;
+    font-size: 16px;
+  }
+}
+
+/* Fix for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  input[type="text"], input[type="time"] {
+    font-size: 16px; /* Prevents zoom on focus */
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .topbar h1 {
+    background: none;
+    -webkit-text-fill-color: initial;
+    color: var(--text);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

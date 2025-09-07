@@ -1,4 +1,4 @@
-/* script.js — REPLACE your existing file with this */
+/* script.js — fixed for the HTML you provided and pointing to Render backend */
 
 // ---------- Helpers ----------
 function mk(q){ return document.querySelector(q); }
@@ -111,21 +111,42 @@ function addSubject() {
   return d;
 }
 
+// helper: build schedule array (used by saveToServer potentially)
+function collectScheduleArray() {
+  const schedule = [];
+  document.querySelectorAll('details.subject').forEach(det => {
+    const subj = (det.querySelector('.subjName')?.value || '').trim();
+    const days = Array.from(det.querySelectorAll('.chip.active')).map(c => c.dataset.day || c.textContent.trim());
+    const start = det.querySelector('.startTime')?.value || '';
+    const end = det.querySelector('.endTime')?.value || '';
+    if(subj || days.length || start || end) {
+      schedule.push({ subject: subj, days, start, end });
+    }
+  });
+  return schedule;
+}
+
 // ---------- Generate QR ----------
 function generateQR() {
-  const idInput = $id("studentID");
-  const nameInput = $id("studentName");
+  if (typeof QRCode === 'undefined') {
+    showToast('QR library not loaded. Check the included script.', 'error');
+    return;
+  }
+
+  // match HTML IDs
+  const idInput = $id("studentId");
+  const nameInput = $id("name");
   const qrcodeDiv = $id("qrcode");
   const qrTextDiv = $id("qrText");
   const qrSection = $id("qrSection");
   const dl = $id("downloadBtn");
 
   // basic validation
-  const id = idInput.value.trim();
-  const name = nameInput.value.trim();
+  const id = (idInput && idInput.value) ? idInput.value.trim() : '';
+  const name = (nameInput && nameInput.value) ? nameInput.value.trim() : '';
   if(!id || !name) {
-    if(!id) markError(idInput);
-    if(!name) markError(nameInput);
+    if(!id && idInput) markError(idInput);
+    if(!name && nameInput) markError(nameInput);
     showToast('Please enter Student ID and Full Name', 'error');
     return;
   }
@@ -200,7 +221,7 @@ function generateQR() {
   }, 140);
 }
 
-// ---------- Download QR ----------
+// ---------- Download QR (and POST to backend) ----------
 async function downloadQR() {
   const notify = (msg, type='info') => {
     if (typeof showToast === 'function') showToast(msg, type); else console.log(type, msg);
@@ -230,40 +251,22 @@ async function downloadQR() {
       return;
     }
 
-    // get student info from inputs (try many ids)
-    const nameIds = ['fullName','studentName','full-name','name','full_name'];
-    let fullName = '';
-    for (const id of nameIds) {
-      const el = document.getElementById(id);
-      if (el && el.value && el.value.trim()) { fullName = el.value.trim(); break; }
-    }
-    // also check qrText payload if available
-    if (!fullName) {
-      const qrTextEl = document.getElementById('qrText') || document.querySelector('.payload') || null;
-      if (qrTextEl) {
-        const txt = (qrTextEl.textContent || qrTextEl.innerText || '').trim();
-        if (txt) {
-          const parts = txt.split('|');
-          if (parts.length >= 2) fullName = parts[1].trim();
-        }
-      }
-    }
-
-    const idEl = document.getElementById('studentId') || document.getElementById('studentID') || document.getElementById('id');
-    const studentId = idEl && idEl.value ? idEl.value.trim() : '';
+    // get student info from inputs
+    const fullName = ($id('name') && $id('name').value) ? $id('name').value.trim() : '';
+    const studentId = ($id('studentId') && $id('studentId').value) ? $id('studentId').value.trim() : '';
+    const lastNameInput = ($id('lastName') && $id('lastName').value) ? $id('lastName').value.trim() : '';
+    let lastName = lastNameInput || 'attendance';
 
     if (!fullName || !studentId) {
       notify('Student name or ID missing. Please fill them before saving.', 'error');
-      // still allow local download, but warn
+      // still allow local download
     }
 
-    // determine last name
-    let lastName = 'attendance';
-    if (fullName) {
+    if (!lastName && fullName) {
       const parts = fullName.split(/\s+/).filter(Boolean);
       if (parts.length) lastName = parts[parts.length - 1];
     }
-    lastName = lastName.replace(/[^a-zA-Z0-9-_]/g, '') || 'attendance';
+    lastName = (lastName || 'attendance').replace(/[^a-zA-Z0-9-_]/g, '') || 'attendance';
     const filename = `${lastName}_qr.png`;
 
     // 1) Download locally immediately
@@ -280,8 +283,7 @@ async function downloadQR() {
       notify('Local download failed (see console)', 'error');
     }
 
-    // 2) POST to backend
-    // get photo from global variable (your upload script should set window.studentPhoto)
+    // 2) POST to backend (Render)
     const photoData = window.studentPhoto || '';
 
     const payload = {
@@ -293,10 +295,10 @@ async function downloadQR() {
     };
 
     console.log('DEBUG: Sending payload to backend:', payload);
-    // Use your backend URL
-    const backendUrl = 'http://127.0.0.1:5000/save';
 
-    // fetch with timeout
+    // <-- your Render endpoint -->
+    const backendUrl = 'https://tmcfi-attendace-qr-code-generator.onrender.com/save';
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s
 
@@ -311,7 +313,7 @@ async function downloadQR() {
       clearTimeout(timeoutId);
     } catch (err) {
       console.error('Network/fetch error sending to backend:', err);
-      notify('Network error: could not contact backend. Make sure server is running and page served via http.', 'error');
+      notify('Network error: could not contact backend.', 'error');
       return;
     }
 
@@ -341,12 +343,13 @@ function resetForm() {
   container.classList.add('resetting');
 
   setTimeout(()=> {
-    // clear fields
-    $id('studentID').value = '';
-    $id('studentName').value = '';
-    $id('subjectsArea').innerHTML = '';
-    const photoInput = $id('photo');
-    if(photoInput){ photoInput.value = ''; }
+    // clear fields (match HTML IDs)
+    $id('studentId') && ($id('studentId').value = '');
+    $id('name') && ($id('name').value = '');
+    $id('lastName') && ($id('lastName').value = '');
+    $id('subjectsArea') && ($id('subjectsArea').innerHTML = '');
+    const photoInputEl = $id('photoInput');
+    if(photoInputEl){ photoInputEl.value = ''; }
     $id('photo-preview') && ($id('photo-preview').innerHTML = '');
     $id('photoFilename') && ($id('photoFilename').textContent = 'No file chosen');
 
@@ -362,13 +365,19 @@ function resetForm() {
     container.classList.remove('resetting');
     showToast('Form reset', 'info');
     // focus
-    $id('studentID') && $id('studentID').focus();
+    $id('studentId') && $id('studentId').focus();
   }, 420); // wait for reset animation
 }
 
 // ---------- Photo upload wiring ----------
 function wirePhoto() {
-  const photoBtn = $id('photoBtn'), photoInput = $id('photo'), preview = $id('photo-preview'), filenameEl = $id('photoFilename'), removeBtn = $id('removePhoto');
+  // match HTML IDs
+  const photoBtn = $id('photoBtn'),
+        photoInput = $id('photoInput'),
+        preview = $id('photo-preview'),
+        filenameEl = $id('photoFilename'),
+        removeBtn = $id('removePhoto');
+
   if(!photoBtn || !photoInput) return;
 
   photoBtn.addEventListener('click', ()=> photoInput.click());
@@ -396,43 +405,75 @@ function wirePhoto() {
 
 // ---------- Initialization ----------
 document.addEventListener('DOMContentLoaded', () => {
-  // wire buttons
+  // wire buttons (match HTML IDs)
   const addBtn = $id('addSubject');
-  const genBtn = $id('generateQR');
+  const genBtn = $id('generateBtn');
   const resetBtn = $id('resetBtn');
   const dlBtn = $id('downloadBtn');
-  const darkToggle = document.querySelector('.dark-toggle');
+  const saveBtn = $id('saveBtn'); // optional: Save to Server button
+  const darkToggle = document.querySelector('.dark-toggle') || $id('darkToggle');
 
   addBtn && addBtn.addEventListener('click', addSubject);
   genBtn && genBtn.addEventListener('click', generateQR);
   resetBtn && resetBtn.addEventListener('click', resetForm);
   dlBtn && dlBtn.addEventListener('click', downloadQR);
+
+  // wire save button to call saveToServer with collected data
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const studentId = ($id('studentId') && $id('studentId').value) ? $id('studentId').value.trim() : '';
+      const fullName = ($id('name') && $id('name').value) ? $id('name').value.trim() : '';
+      const scheduleData = collectScheduleArray();
+      const photoBase64 = window.studentPhoto || '';
+
+      if (!studentId || !fullName) {
+        showToast('Student ID and Name are required to save.', 'error');
+        return;
+      }
+
+      // get QR base64 if generated
+      let qrBase64 = '';
+      const qDiv = $id('qrcode');
+      if (qDiv) {
+        const canvas = qDiv.querySelector('canvas');
+        const img = qDiv.querySelector('img');
+        if (canvas) {
+          try { qrBase64 = canvas.toDataURL('image/png'); } catch(e){ qrBase64 = ''; }
+        } else if (img) qrBase64 = img.src || '';
+      }
+
+      await saveToServer(studentId, fullName, scheduleData, photoBase64, qrBase64);
+    });
+  }
+
+  // single dark-toggle handler
   darkToggle && darkToggle.addEventListener('click', ()=>{
-    document.documentElement.classList.toggle('dark-mode');
-    document.body.classList.toggle('dark-mode');
-    darkToggle && darkToggle.addEventListener('click', ()=>{
-  const root = document.documentElement;
-  const isDark = root.classList.toggle('dark-mode');
-  document.body.classList.toggle('dark-mode', isDark);
+    const root = document.documentElement;
+    const isDark = root.classList.toggle('dark-mode');
+    document.body.classList.toggle('dark-mode', isDark);
+    darkToggle.textContent = isDark ? '☀️' : '🌙';
 
-  // Add a temporary "mode-transition" class for smooth fade
-  document.body.classList.add('mode-transition');
-  setTimeout(()=> document.body.classList.remove('mode-transition'), 500);
-
-  // Update icon
-  darkToggle.textContent = isDark ? '☀️' : '🌙';
-});
-
-    // re-generate QR colors if qrcode exists (simple way: hide and show)
+    // re-render QR with new colors (if exists)
     const qrcodeDiv = $id('qrcode');
-    if(qrcodeDiv && qrcodeDiv.childNodes.length > 0) {
-      const old = qrcodeDiv.innerHTML;
+    const txt = $id('qrText') ? $id('qrText').innerText : '';
+    if (qrcodeDiv && txt) {
       qrcodeDiv.innerHTML = '';
-      // small delay then re-generate with same text
-      setTimeout(()=> {
-        const txt = $id('qrText') ? $id('qrText').innerText : '';
-        if(txt) new QRCode(qrcodeDiv, { text: txt, width: 220, height: 220, colorDark: document.documentElement.classList.contains('dark-mode') ? "#FFFFFF" : "#111111", colorLight: "transparent" });
-      }, 80);
+      new QRCode(qrcodeDiv, { text: txt, width: 220, height: 220, colorDark: isDark ? "#FFFFFF" : "#111111", colorLight: "transparent" });
+    }
+  });
+
+  // fix topbar layout (keep original intention)
+  document.querySelectorAll('.container .topbar').forEach(tb => {
+    const toggle = tb.querySelector('.dark-toggle') || tb.querySelector('#darkToggle');
+    const title = tb.querySelector('h1');
+    if (title) {
+      title.style.minWidth = '0';
+      title.style.whiteSpace = 'nowrap';
+      title.style.overflow = 'hidden';
+      title.style.textOverflow = 'ellipsis';
+    }
+    if (toggle && tb.lastElementChild !== toggle) {
+      tb.appendChild(toggle);
     }
   });
 
@@ -446,47 +487,10 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('load', ()=> document.body.classList.add('loaded'));
 });
 
-darkToggle.addEventListener('click', () => {
-  const root = document.documentElement;
-  const setDark = !root.classList.contains('dark-mode');
-
-  // Spin effect for button
-  darkToggle.classList.add('spin');
-  setTimeout(() => darkToggle.classList.remove('spin'), 400);
-
-  if (setDark) {
-    root.classList.add('dark-mode');
-    darkToggle.textContent = '☀️';
-    try { localStorage.setItem('attendance_dark', '1'); } catch (e) {}
-  } else {
-    root.classList.remove('dark-mode');
-    darkToggle.textContent = '🌙';
-    try { localStorage.setItem('attendance_dark', '0'); } catch (e) {}
-  }
-});
-
-// Run after DOM is ready (put inside DOMContentLoaded or at end of script)
-document.querySelectorAll('.container .topbar').forEach(tb => {
-  const toggle = tb.querySelector('.dark-toggle') || tb.querySelector('#darkToggle');
-  const title = tb.querySelector('h1');
-  if (title) {
-    // ensure title can shrink in a flex layout
-    title.style.minWidth = '0';
-    title.style.whiteSpace = 'nowrap';
-    title.style.overflow = 'hidden';
-    title.style.textOverflow = 'ellipsis';
-  }
-  if (toggle && tb.lastElementChild !== toggle) {
-    // move toggle to be the last child so it sits at the far right
-    tb.appendChild(toggle);
-  }
-});
-
-saveToServer(studentId, fullName, scheduleData, photoBase64, qrBase64);
-
+// ---------- SaveToServer (not auto-called) ----------
 async function saveToServer(id, name, schedule, photoBase64, qrBase64) {
   try {
-    const response = await fetch("http://127.0.0.1:5000/save_student", {
+    const response = await fetch("https://tmcfi-attendace-qr-code-generator.onrender.com/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -499,10 +503,73 @@ async function saveToServer(id, name, schedule, photoBase64, qrBase64) {
     });
     const result = await response.json();
     console.log(result);
-    alert("Student record saved successfully!");
+    showToast("Student record saved successfully!", "success");
+    return result;
   } catch (err) {
     console.error(err);
-    alert("Error saving student record.");
+    showToast("Error saving student record.", "error");
+    throw err;
+  }
+}
+
+
+// ---------- Save to Server ----------
+async function saveToServer() {
+  const studentId = $id('studentId').value.trim();
+  const fullName = $id('name').value.trim();
+  const photoData = window.studentPhoto || '';
+  const qrCanvas = $id('qrcode').querySelector('canvas');
+  const qrImg = $id('qrcode').querySelector('img');
+  let qrData = '';
+  if (qrCanvas) qrData = qrCanvas.toDataURL('image/png');
+  if (!qrData && qrImg) qrData = qrImg.src;
+
+  if (!studentId || !fullName || !qrData) {
+    showToast('Missing Student ID, Full Name, or QR code. Please generate first.', 'error');
+    return;
   }
 
+  // derive last name from full name
+  let lastName = 'attendance';
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length) lastName = parts[parts.length - 1].replace(/[^a-zA-Z0-9-_]/g, '') || 'attendance';
+
+  const payload = {
+    id: studentId,
+    name: fullName,
+    lastName: lastName,
+    qr: qrData,
+    photo: photoData
+  };
+
+  try {
+    const resp = await fetch('https://tmcfi-attendace-qr-code-generator.onrender.com/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await resp.json();
+    if (resp.ok) {
+      showToast(result.message || 'Saved to backend', 'success');
+      console.log('Saved files:', result.saved);
+    } else {
+      showToast(`Backend error: ${result.error || resp.statusText}`, 'error');
+    }
+  } catch (err) {
+    console.error('saveToServer error:', err);
+    showToast('Error saving to backend', 'error');
+  }
 }
+
+// ---------- Initialization ----------
+document.addEventListener('DOMContentLoaded', () => {
+  $id('addSubject').addEventListener('click', addSubject);
+  $id('generateBtn').addEventListener('click', generateQR);
+  $id('resetBtn').addEventListener('click', resetForm);
+  $id('downloadBtn').addEventListener('click', downloadQR);
+  $id('saveBtn').addEventListener('click', saveToServer);
+  wirePhoto();
+  hideQRInitially();
+});
+
